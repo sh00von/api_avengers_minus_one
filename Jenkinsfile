@@ -53,6 +53,10 @@ pipeline {
                     chmod 666 /var/run/docker.sock 2>/dev/null || true
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
                     chmod +x /usr/bin/docker 2>/dev/null || true
+                    if ! command -v docker-compose &> /dev/null; then
+                        curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        chmod +x /usr/local/bin/docker-compose
+                    fi
                     docker-compose version || docker compose version || true
                     docker-compose down || docker compose down || true
                     docker-compose up -d || docker compose up -d
