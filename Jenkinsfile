@@ -58,6 +58,7 @@ pipeline {
                         chmod +x /usr/local/bin/docker-compose
                     fi
                     docker-compose version || docker compose version || true
+                    docker rm -f demo-app 2>/dev/null || true
                     docker-compose down || docker compose down || true
                     docker-compose up -d || docker compose up -d
                     sleep 5
