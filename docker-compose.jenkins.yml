@@ -16,7 +16,7 @@ services:
     command: >
       bash -c "
         apt-get update && 
-        apt-get install -y docker.io && 
+        apt-get install -y docker.io docker-compose && 
         groupadd -f docker &&
         usermod -aG docker jenkins || true &&
         chmod 666 /var/run/docker.sock || true &&

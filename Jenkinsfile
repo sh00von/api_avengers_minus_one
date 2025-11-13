@@ -19,6 +19,7 @@ pipeline {
             steps {
                 sh '''
                     python3 --version
+                    apt-get update && apt-get install -y python3-pip || true
                     python3 -m pip install --break-system-packages -r requirements.txt
                 '''
             }
@@ -52,11 +53,11 @@ pipeline {
                     chmod 666 /var/run/docker.sock 2>/dev/null || true
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
                     chmod +x /usr/bin/docker 2>/dev/null || true
-                    docker compose version || docker-compose version || true
-                    docker compose down || docker-compose down || true
-                    docker compose up -d || docker-compose up -d
+                    docker-compose version || docker compose version || true
+                    docker-compose down || docker compose down || true
+                    docker-compose up -d || docker compose up -d
                     sleep 5
-                    docker compose ps || docker-compose ps
+                    docker-compose ps || docker compose ps
                 '''
             }
         }
