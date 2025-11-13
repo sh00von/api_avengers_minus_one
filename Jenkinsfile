@@ -74,10 +74,16 @@ pipeline {
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
                     chmod +x /usr/bin/docker 2>/dev/null || true
                     docker ps | grep ${APP_NAME} || docker compose ps || docker-compose ps
-                    chmod +x healthcheck.sh
-                    ./healthcheck.sh || true
-                    curl -f http://localhost:5000/ || exit 1
-                    curl -f http://localhost:5000/health || exit 1
+                    sleep 10
+                    CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demo-app 2>/dev/null || echo "")
+                    if [ -n "$CONTAINER_IP" ]; then
+                        curl -f http://${CONTAINER_IP}:5000/ || curl -f http://host.docker.internal:5000/ || exit 1
+                        curl -f http://${CONTAINER_IP}:5000/health || curl -f http://host.docker.internal:5000/health || exit 1
+                    else
+                        curl -f http://host.docker.internal:5000/ || exit 1
+                        curl -f http://host.docker.internal:5000/health || exit 1
+                    fi
+                    echo "Health check passed!"
                 '''
             }
         }
