@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  demo-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: demo-app:latest
+    container_name: demo-app
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    environment:
+      - PORT=5000
+
