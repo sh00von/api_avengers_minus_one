@@ -19,8 +19,7 @@ pipeline {
             steps {
                 sh '''
                     python3 --version
-                    export PATH=$PATH:/usr/local/bin:/usr/bin
-                    python3 -m pip install --user -r requirements.txt
+                    python3 -m pip install --break-system-packages -r requirements.txt
                 '''
             }
         }
@@ -28,7 +27,6 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    export PATH=$PATH:/root/.local/bin
                     cd /var/jenkins_home/workspace/api_avengers
                     python3 -m unittest app.test_app -v
                 '''
@@ -38,7 +36,7 @@ pipeline {
         stage('Package') {
             steps {
                 sh '''
-                    export PATH=$PATH:/usr/bin
+                    chmod 666 /var/run/docker.sock || true
                     docker build -t ${DOCKER_IMAGE} -t ${DOCKER_IMAGE_LATEST} .
                     docker images | grep ${APP_NAME}
                 '''
@@ -48,7 +46,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    export PATH=$PATH:/usr/bin
+                    chmod 666 /var/run/docker.sock || true
                     docker compose version || docker-compose version || true
                     docker compose down || docker-compose down || true
                     docker compose up -d || docker-compose up -d
@@ -61,7 +59,7 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                    export PATH=$PATH:/usr/bin
+                    chmod 666 /var/run/docker.sock || true
                     docker ps | grep ${APP_NAME} || docker compose ps || docker-compose ps
                     chmod +x healthcheck.sh
                     ./healthcheck.sh || true
