@@ -38,8 +38,10 @@ pipeline {
                 sh '''
                     chmod 666 /var/run/docker.sock 2>/dev/null || true
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
-                    /usr/bin/docker build -t ${DOCKER_IMAGE} -t ${DOCKER_IMAGE_LATEST} .
-                    /usr/bin/docker images | grep ${APP_NAME}
+                    chmod +x /usr/bin/docker 2>/dev/null || true
+                    which docker || find /usr -name docker -type f 2>/dev/null | head -1
+                    docker build -t ${DOCKER_IMAGE} -t ${DOCKER_IMAGE_LATEST} .
+                    docker images | grep ${APP_NAME}
                 '''
             }
         }
@@ -49,11 +51,12 @@ pipeline {
                 sh '''
                     chmod 666 /var/run/docker.sock 2>/dev/null || true
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
-                    /usr/bin/docker compose version || /usr/bin/docker-compose version || true
-                    /usr/bin/docker compose down || /usr/bin/docker-compose down || true
-                    /usr/bin/docker compose up -d || /usr/bin/docker-compose up -d
+                    chmod +x /usr/bin/docker 2>/dev/null || true
+                    docker compose version || docker-compose version || true
+                    docker compose down || docker-compose down || true
+                    docker compose up -d || docker-compose up -d
                     sleep 5
-                    /usr/bin/docker compose ps || /usr/bin/docker-compose ps
+                    docker compose ps || docker-compose ps
                 '''
             }
         }
@@ -63,7 +66,8 @@ pipeline {
                 sh '''
                     chmod 666 /var/run/docker.sock 2>/dev/null || true
                     chown root:docker /var/run/docker.sock 2>/dev/null || true
-                    /usr/bin/docker ps | grep ${APP_NAME} || /usr/bin/docker compose ps || /usr/bin/docker-compose ps
+                    chmod +x /usr/bin/docker 2>/dev/null || true
+                    docker ps | grep ${APP_NAME} || docker compose ps || docker-compose ps
                     chmod +x healthcheck.sh
                     ./healthcheck.sh || true
                     curl -f http://localhost:5000/ || exit 1
