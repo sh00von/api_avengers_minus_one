@@ -8,7 +8,7 @@ RETRY_DELAY=2
 
 echo "Checking $CONTAINER_NAME..."
 
-if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${CONTAINER_NAME}$"; then
     echo "ERROR: Container $CONTAINER_NAME is not running"
     exit 1
 fi

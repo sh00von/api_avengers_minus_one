@@ -18,9 +18,9 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    python3 --version || python --version
-                    which pip3 || which pip || apt-get update && apt-get install -y python3-pip || true
-                    python3 -m pip install --user -r requirements.txt 2>/dev/null || python -m pip install --user -r requirements.txt 2>/dev/null || pip3 install --user -r requirements.txt 2>/dev/null || pip install --user -r requirements.txt 2>/dev/null || echo "Skipping pip install, will test in Docker"
+                    python3 --version
+                    export PATH=$PATH:/usr/local/bin:/usr/bin
+                    python3 -m pip install --user -r requirements.txt
                 '''
             }
         }
@@ -28,7 +28,9 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    python3 -m pytest app/test_app.py -v || python3 -m unittest app.test_app -v || python -m unittest app.test_app -v
+                    export PATH=$PATH:/root/.local/bin
+                    cd /var/jenkins_home/workspace/api_avengers
+                    python3 -m unittest app.test_app -v
                 '''
             }
         }
@@ -36,6 +38,7 @@ pipeline {
         stage('Package') {
             steps {
                 sh '''
+                    export PATH=$PATH:/usr/bin
                     docker build -t ${DOCKER_IMAGE} -t ${DOCKER_IMAGE_LATEST} .
                     docker images | grep ${APP_NAME}
                 '''
@@ -45,6 +48,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    export PATH=$PATH:/usr/bin
+                    docker compose version || docker-compose version || true
                     docker compose down || docker-compose down || true
                     docker compose up -d || docker-compose up -d
                     sleep 5
@@ -56,6 +61,7 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
+                    export PATH=$PATH:/usr/bin
                     docker ps | grep ${APP_NAME} || docker compose ps || docker-compose ps
                     chmod +x healthcheck.sh
                     ./healthcheck.sh || true
@@ -71,7 +77,7 @@ pipeline {
             echo "Pipeline completed! App running at http://localhost:5000"
         }
         failure {
-            sh 'docker compose down || docker-compose down || true'
+            sh 'export PATH=$PATH:/usr/bin; docker compose down || docker-compose down || true'
         }
     }
 }
